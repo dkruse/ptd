@@ -9,14 +9,45 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class PublicTransportDelayDbAdapter {
+	
+	private static final String SERVICE_OPERATOR_DATABASE_TABLE = "serviceOperator";
     public static final String SERVICE_OPERATOR_KEY_NAME = "name";
     public static final String SERVICE_OPERATOR_KEY_CONTACT_EMAIL = "email";
     public static final String SERVICE_OPERATOR_KEY_ROWID = "_id";
     
+    private static final String LINE_DATABASE_TABLE = "line";
     public static final String LINE_KEY_NAME = "name";
     public static final String LINE_KEY_START = "start";
     public static final String LINE_KEY_END = "ende";
     public static final String LINE_KEY_ROWID = "_id";
+    
+    private static final String CONNECTION_DATABASE_TABLE = "connection";
+    public static final String CONNECTION_KEY_ROWID = "_id";
+    public static final String CONNECTION_DIRECTION_KEY = "direction"; // outward / return
+    public static final String CONNECTION_TIME_KEY = "time";
+    public static final String CONNECTION_WEEKDAY_TYPE_KEY = "weekdayType"; // daily, sundays and hollyday...
+    
+    private static final String STATION_DATABASE_TABLE = "station";
+    public static final String STATION_KEY_NAME = "name";
+    public static final String STATION_KEY_ROWID = "_id";
+    
+    private static final String DELAY_DATABASE_TABLE = "delay";
+    public static final String DELAY_KEY_ROWID = "_id";
+    public static final String DELAY_KEY_CONNECTION_START = "start";
+    public static final String DELAY_KEY_CONNECTION_END = "end";
+    public static final String DELAY_KEY_START_TIME = "startTime";
+    public static final String DELAY_KEY_END_TIME = "endTime";
+    public static final String DELAY_KEY_DATE = "date";
+    
+    private static final String EVENT_DATABASE_TABLE = "event";
+    public static final String EVENT_KEY_ROWID = "_id";
+    public static final String EVENT_KEY_PLACE_TYPE = "placeType"; // track, station
+    public static final String EVENT_KEY_REASON = "reason";
+    
+    private static final String ANNOUNCEMENT_DATABASE_TABLE = "announcement";
+    private static final String ANNOUNCEMENT_KEY_ROWID = "_id";
+    private static final String ANNOUNCEMENT_KEY_TYPE = "type"; // vehicle, station
+    private static final String ANNOUNCEMENT_KEY_TEXT = "text";
     
     private static final String TAG = "PublicTransportDelayDbAdapter";
 
@@ -28,17 +59,58 @@ public class PublicTransportDelayDbAdapter {
      * Database creation sql statement
      */
     private static final String DATABASE_NAME = "ptd";
-    private static final String SERVICE_OPERATOR_DATABASE_TABLE = "serviceOperator";
-    private static final String LINE_DATABASE_TABLE = "line";
     private static final int DATABASE_VERSION = 1;
     
+    
     final static String SERVICE_OPERATOR_CREATE =
-        "create table " + SERVICE_OPERATOR_DATABASE_TABLE + " (" + SERVICE_OPERATOR_KEY_ROWID + " integer primary key autoincrement, "
-                + SERVICE_OPERATOR_KEY_NAME + " text not null, " + SERVICE_OPERATOR_KEY_CONTACT_EMAIL + " text not null);";
+        "create table " + SERVICE_OPERATOR_DATABASE_TABLE + " (" 
+                + SERVICE_OPERATOR_KEY_ROWID + " integer primary key autoincrement, "
+                + SERVICE_OPERATOR_KEY_NAME + " text not null, " 
+                + SERVICE_OPERATOR_KEY_CONTACT_EMAIL + " text not null);";
     
     final static String LINE_CREATE =
-        "create table " + LINE_DATABASE_TABLE + " (" + LINE_KEY_ROWID + " integer primary key autoincrement, "
-                + LINE_KEY_NAME + " text not null, " + LINE_KEY_START + " text not null, " + LINE_KEY_END + " text not null);";
+        "create table " + LINE_DATABASE_TABLE + " (" 
+                + LINE_KEY_ROWID + " integer primary key autoincrement, "
+                + LINE_KEY_NAME + " text not null, " 
+                + LINE_KEY_START + " integer constraint fk_line_start (" + LINE_KEY_START + ") references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
+                + LINE_KEY_END + " integer constraint fk_line_end (" + LINE_KEY_END + ") references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict);";
+    
+    final static String CONNECTION_CREATE =
+    	"create table " + CONNECTION_DATABASE_TABLE + " (" 
+    	        + CONNECTION_KEY_ROWID + " integer primary key autoincrement, "
+    	        + LINE_KEY_ROWID + " integer constraint fk_line (" + LINE_KEY_ROWID + ") references " + LINE_DATABASE_TABLE + "(" + LINE_KEY_ROWID + ") on delete restrict, "
+    	        + CONNECTION_DIRECTION_KEY + " integer not null, "
+    	        + CONNECTION_TIME_KEY + " integer not null, "
+    	        + CONNECTION_WEEKDAY_TYPE_KEY + " integer not null);";
+    
+    final static String STATION_CREATE = 
+    	"create table " + STATION_DATABASE_TABLE + " ("
+    	        + STATION_KEY_ROWID + " integer primary key autoincrement, "
+    	        + STATION_KEY_NAME + " text not null)";
+    
+    final static String DELAY_CREATE =
+    	"create table " + DELAY_DATABASE_TABLE + " ("
+    	        + DELAY_KEY_ROWID + " integer primary key autoincrement, "
+    	        + CONNECTION_KEY_ROWID + " integer constraint fk_connection (" + CONNECTION_KEY_ROWID + ") references " + CONNECTION_DATABASE_TABLE + "(" + CONNECTION_KEY_ROWID + ") on delete restrict, "
+                + DELAY_KEY_CONNECTION_START + " integer constraint fk_entry (" + DELAY_KEY_CONNECTION_START + ") references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
+                + DELAY_KEY_CONNECTION_END + " integer constraint fk_exit (" + DELAY_KEY_CONNECTION_END + ") references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
+                + DELAY_KEY_START_TIME + " integer not null, "
+                + DELAY_KEY_END_TIME + " integer not null, "
+                + DELAY_KEY_DATE + " date not null);";
+    
+    final static String EVENT_CREATE = 
+    	"create table " + EVENT_DATABASE_TABLE + " ("
+    	        + EVENT_KEY_ROWID + " integer primary key autoincrement, "
+    	        + DELAY_KEY_ROWID + " integer constraint fk_event_delay (" + DELAY_KEY_ROWID + ") references " + DELAY_DATABASE_TABLE + "(" + DELAY_KEY_ROWID + ") on delete cascade, "
+                + EVENT_KEY_PLACE_TYPE + " integer, "
+                + EVENT_KEY_REASON + " text);";
+    
+    final static String ANNOUNCEMENT_CREATE =
+    	"create table " + ANNOUNCEMENT_DATABASE_TABLE + " ("
+    	        + ANNOUNCEMENT_KEY_ROWID + " integer primary key autoincrement, "
+    	        + DELAY_KEY_ROWID + " integer constraint fk_announcement_delay (" + DELAY_KEY_ROWID + ") references " + DELAY_DATABASE_TABLE + "(" + DELAY_KEY_ROWID + ") on delete cascade, "
+                + ANNOUNCEMENT_KEY_TYPE + " integer not null, "
+                + ANNOUNCEMENT_KEY_TEXT + " text not null);";
     
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -50,7 +122,12 @@ public class PublicTransportDelayDbAdapter {
         public void onCreate(SQLiteDatabase db) {
 
             db.execSQL(SERVICE_OPERATOR_CREATE);
+            db.execSQL(STATION_CREATE);
             db.execSQL(LINE_CREATE);
+            db.execSQL(CONNECTION_CREATE);
+            db.execSQL(DELAY_CREATE);
+            db.execSQL(ANNOUNCEMENT_CREATE);
+            db.execSQL(EVENT_CREATE);
         }
 
         @Override
@@ -59,6 +136,11 @@ public class PublicTransportDelayDbAdapter {
                     + newVersion + ", which will destroy all old data");
             db.execSQL("DROP TABLE IF EXISTS " + SERVICE_OPERATOR_DATABASE_TABLE);
             db.execSQL("DROP TABLE IF EXISTS " + LINE_DATABASE_TABLE);
+            db.execSQL("DROP TABLE IF EXISTS " + STATION_DATABASE_TABLE);
+            db.execSQL("DROP TABLE IF EXISTS " + CONNECTION_DATABASE_TABLE);
+            db.execSQL("DROP TABLE IF EXISTS " + DELAY_DATABASE_TABLE);
+            db.execSQL("DROP TABLE IF EXISTS " + ANNOUNCEMENT_DATABASE_TABLE);
+            db.execSQL("DROP TABLE IF EXISTS " + EVENT_DATABASE_TABLE);
             onCreate(db);
         }
     }
