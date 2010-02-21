@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content">
+  <LinearLayout android:orientation="horizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+  	<TextView android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+		android:text="@string/station" />
+	<EditText android:id="@+android:id/station"
+		android:layout_height="wrap_content"
+	    android:layout_width="wrap_content"
+		android:layout_weight="1" />
+	<Button android:id="@+android:id/stationSelect" 
+	  android:text="@string/confirm"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" />
+  </LinearLayout>
+  <LinearLayout android:orientation="horizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+  	<TextView android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+		android:text="@string/line" />
+	<EditText android:id="@+android:id/lineEntry"
+		android:layout_height="wrap_content"
+	    android:layout_width="wrap_content"
+		android:layout_weight="1" />
+	<Button android:id="@+android:id/lineSelect" 
+	  android:text="@string/confirm"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" />	
+  </LinearLayout>
+  <LinearLayout android:orientation="horizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+  	<TextView android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+		android:text="@string/date" />
+	<EditText android:id="@+android:id/dateField"
+		android:layout_height="wrap_content"
+	    android:layout_width="wrap_content"
+		android:layout_weight="1" />
+	<EditText android:id="@+android:id/timeField"
+		android:layout_height="wrap_content"
+	    android:layout_width="wrap_content"
+		android:layout_weight="1" />	
+	</LinearLayout>
+	
+  <Button android:id="@+android:id/confirm" 
+	  android:text="@string/confirm"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" />
+</LinearLayout>

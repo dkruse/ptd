@@ -25,7 +25,8 @@ public class PublicTransportDelayDbAdapter {
     public static final String CONNECTION_KEY_ROWID = "_id";
     public static final String CONNECTION_DIRECTION_KEY = "direction"; // outward / return
     public static final String CONNECTION_TIME_KEY = "time";
-    public static final String CONNECTION_WEEKDAY_TYPE_KEY = "weekdayType"; // daily, sundays and hollyday...
+    public static final String CONNECTION_WEEKDAY_TYPE_KEY = "weekdayType"; // daily, sundays and holyday...
+    public static final String CONNECTION_FK_LINE_KEY_ROWID = "lineKeyRef";
     
     private static final String STATION_DATABASE_TABLE = "station";
     public static final String STATION_KEY_NAME = "name";
@@ -38,16 +39,19 @@ public class PublicTransportDelayDbAdapter {
     public static final String DELAY_KEY_START_TIME = "startTime";
     public static final String DELAY_KEY_END_TIME = "endTime";
     public static final String DELAY_KEY_DATE = "date";
+    public static final String DELAY_FK_CONNECTION_KEY_ROWID = "connectionKeyRef";
     
     private static final String EVENT_DATABASE_TABLE = "event";
     public static final String EVENT_KEY_ROWID = "_id";
     public static final String EVENT_KEY_PLACE_TYPE = "placeType"; // track, station
     public static final String EVENT_KEY_REASON = "reason";
+    public static final String EVENT_FK_DELAY_KEY_ROWID = "delayKeyRef";
     
     private static final String ANNOUNCEMENT_DATABASE_TABLE = "announcement";
     private static final String ANNOUNCEMENT_KEY_ROWID = "_id";
     private static final String ANNOUNCEMENT_KEY_TYPE = "type"; // vehicle, station
     private static final String ANNOUNCEMENT_KEY_TEXT = "text";
+    private static final String ANNOUNCEMENT_FK_DELAY_KEY_ROWID = "delayKeyRef";
     
     private static final String TAG = "PublicTransportDelayDbAdapter";
 
@@ -72,13 +76,13 @@ public class PublicTransportDelayDbAdapter {
         "create table " + LINE_DATABASE_TABLE + " (" 
                 + LINE_KEY_ROWID + " integer primary key autoincrement, "
                 + LINE_KEY_NAME + " text not null, " 
-                + LINE_KEY_START + " integer constraint fk_line_start (" + LINE_KEY_START + ") references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
-                + LINE_KEY_END + " integer constraint fk_line_end (" + LINE_KEY_END + ") references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict);";
+                + LINE_KEY_START + " integer constraint fk_line_start references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
+                + LINE_KEY_END + " integer constraint fk_line_end references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict);";
     
     final static String CONNECTION_CREATE =
     	"create table " + CONNECTION_DATABASE_TABLE + " (" 
     	        + CONNECTION_KEY_ROWID + " integer primary key autoincrement, "
-    	        + LINE_KEY_ROWID + " integer constraint fk_line (" + LINE_KEY_ROWID + ") references " + LINE_DATABASE_TABLE + "(" + LINE_KEY_ROWID + ") on delete restrict, "
+    	        + CONNECTION_FK_LINE_KEY_ROWID + " integer constraint fk_line references " + LINE_DATABASE_TABLE + "(" + LINE_KEY_ROWID + ") on delete restrict, "
     	        + CONNECTION_DIRECTION_KEY + " integer not null, "
     	        + CONNECTION_TIME_KEY + " integer not null, "
     	        + CONNECTION_WEEKDAY_TYPE_KEY + " integer not null);";
@@ -91,9 +95,9 @@ public class PublicTransportDelayDbAdapter {
     final static String DELAY_CREATE =
     	"create table " + DELAY_DATABASE_TABLE + " ("
     	        + DELAY_KEY_ROWID + " integer primary key autoincrement, "
-    	        + CONNECTION_KEY_ROWID + " integer constraint fk_connection (" + CONNECTION_KEY_ROWID + ") references " + CONNECTION_DATABASE_TABLE + "(" + CONNECTION_KEY_ROWID + ") on delete restrict, "
-                + DELAY_KEY_CONNECTION_START + " integer constraint fk_entry (" + DELAY_KEY_CONNECTION_START + ") references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
-                + DELAY_KEY_CONNECTION_END + " integer constraint fk_exit (" + DELAY_KEY_CONNECTION_END + ") references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
+    	        + DELAY_FK_CONNECTION_KEY_ROWID + " integer constraint fk_connection references " + CONNECTION_DATABASE_TABLE + "(" + CONNECTION_KEY_ROWID + ") on delete restrict, "
+                + DELAY_KEY_CONNECTION_START + " integer constraint fk_entry references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
+                + DELAY_KEY_CONNECTION_END + " integer constraint fk_exit references " + STATION_DATABASE_TABLE + "(" + STATION_KEY_ROWID + ") on delete restrict, "
                 + DELAY_KEY_START_TIME + " integer not null, "
                 + DELAY_KEY_END_TIME + " integer not null, "
                 + DELAY_KEY_DATE + " date not null);";
@@ -101,14 +105,14 @@ public class PublicTransportDelayDbAdapter {
     final static String EVENT_CREATE = 
     	"create table " + EVENT_DATABASE_TABLE + " ("
     	        + EVENT_KEY_ROWID + " integer primary key autoincrement, "
-    	        + DELAY_KEY_ROWID + " integer constraint fk_event_delay (" + DELAY_KEY_ROWID + ") references " + DELAY_DATABASE_TABLE + "(" + DELAY_KEY_ROWID + ") on delete cascade, "
+    	        + EVENT_FK_DELAY_KEY_ROWID + " integer constraint fk_event_delay references " + DELAY_DATABASE_TABLE + "(" + DELAY_KEY_ROWID + ") on delete cascade, "
                 + EVENT_KEY_PLACE_TYPE + " integer, "
                 + EVENT_KEY_REASON + " text);";
     
     final static String ANNOUNCEMENT_CREATE =
     	"create table " + ANNOUNCEMENT_DATABASE_TABLE + " ("
     	        + ANNOUNCEMENT_KEY_ROWID + " integer primary key autoincrement, "
-    	        + DELAY_KEY_ROWID + " integer constraint fk_announcement_delay (" + DELAY_KEY_ROWID + ") references " + DELAY_DATABASE_TABLE + "(" + DELAY_KEY_ROWID + ") on delete cascade, "
+    	        + ANNOUNCEMENT_FK_DELAY_KEY_ROWID + " integer constraint fk_announcement_delay references " + DELAY_DATABASE_TABLE + "(" + DELAY_KEY_ROWID + ") on delete cascade, "
                 + ANNOUNCEMENT_KEY_TYPE + " integer not null, "
                 + ANNOUNCEMENT_KEY_TEXT + " text not null);";
     
@@ -120,14 +124,19 @@ public class PublicTransportDelayDbAdapter {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-
-            db.execSQL(SERVICE_OPERATOR_CREATE);
-            db.execSQL(STATION_CREATE);
-            db.execSQL(LINE_CREATE);
-            db.execSQL(CONNECTION_CREATE);
-            db.execSQL(DELAY_CREATE);
-            db.execSQL(ANNOUNCEMENT_CREATE);
-            db.execSQL(EVENT_CREATE);
+        	try {
+        		db.execSQL(SERVICE_OPERATOR_CREATE);
+        		db.execSQL(STATION_CREATE);
+        		db.execSQL(LINE_CREATE);
+        		db.execSQL(CONNECTION_CREATE);
+        		db.execSQL(DELAY_CREATE);
+        		db.execSQL(ANNOUNCEMENT_CREATE);
+        		db.execSQL(EVENT_CREATE);
+        		Log.i("DatabaseCreate", "Database successfully created");
+        	} catch(Exception e)
+        	{
+        		Log.e("DatabaseCreate", e.getStackTrace().toString());
+        	}
         }
 
         @Override
