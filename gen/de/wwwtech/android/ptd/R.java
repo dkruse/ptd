@@ -13,11 +13,29 @@ public final class R {
     public static final class drawable {
         public static final int icon=0x7f020000;
     }
+    public static final class id {
+        public static final int confirm=0x01010006;
+        public static final int dateField=0x01010004;
+        public static final int delay=0x7f050000;
+        public static final int lineEntry=0x01010002;
+        public static final int lineSelect=0x01010003;
+        public static final int station=0x01010000;
+        public static final int stationSelect=0x01010001;
+        public static final int timeField=0x01010005;
+    }
     public static final class layout {
-        public static final int main=0x7f030000;
+        public static final int delayactivity=0x7f030000;
+        public static final int delaylist=0x7f030001;
+        public static final int delayrow=0x7f030002;
     }
     public static final class string {
         public static final int app_name=0x7f040001;
+        public static final int confirm=0x7f040002;
+        public static final int date=0x7f040006;
         public static final int hello=0x7f040000;
+        public static final int line=0x7f040003;
+        public static final int menu_insert_delay=0x7f040004;
+        public static final int station=0x7f040005;
+        public static final int time=0x7f040007;
     }
 }

@@ -2,4 +2,10 @@
 <resources>
     <string name="hello">Hello World!</string>
     <string name="app_name">Public Transport Delay</string>
+<string name="confirm">confirm</string>
+<string name="line">line</string>
+<string name="menu_insert_delay">Insert</string>
+<string name="station">station</string>
+<string name="date">Date</string>
+<string name="time">Time</string>
 </resources>
